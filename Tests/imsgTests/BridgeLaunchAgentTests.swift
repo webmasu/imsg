@@ -32,6 +32,15 @@ func bridgeAgentCustomIntervalAndDylib(interval: Int) throws {
       == ["/opt/imsg/current/imsg", "launch", "--dylib", "/opt/imsg/helpers/custom.dylib"])
 }
 
+@Test(arguments: [("60", "60"), (" 90 ", "90"), ("0", nil), ("soon", nil), ("", nil)])
+func bridgeAgentKeepsLaunchReadyTimeout(raw: String, persisted: String?) throws {
+  let agent = try BridgeLaunchAgent(
+    executable: "/opt/imsg/current/imsg", currentDirectory: "/opt/imsg",
+    homeDirectory: "/Users/fixture", environment: ["IMSG_LAUNCH_READY_TIMEOUT": raw])
+  let environment = agent.propertyList["EnvironmentVariables"] as? [String: String]
+  #expect(environment == persisted.map { ["IMSG_LAUNCH_READY_TIMEOUT": $0] })
+}
+
 @Test(arguments: [".build/release/helper.dylib", "/opt/imsg/lib/helper.dylib"], [false, true])
 func bridgeAgentPreservesRelativeDiscoveryContext(automaticDylib: String, explicit: Bool) throws {
   let agent = try BridgeLaunchAgent(
